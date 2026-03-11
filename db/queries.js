@@ -1,11 +1,11 @@
 const { Client, Pool } = require('pg')
 
 const pool = new Pool({
-  user: 'jhonatan',
-  host: 'localhost',
-  database: 'ebot',
-  password: 'jhonatan',
-  port: 5432
+  user: process.env.DB_USER || 'ebot_user',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'ebot',
+  password: process.env.DB_PASSWORD || 'ebot_pass',
+  port: parseInt(process.env.DB_PORT, 10) || 5432
 });
 
 const getUsers = (request, response) => {
@@ -74,7 +74,7 @@ const createUser = (request, response) => {
 
 const updateUser = (request, response) => {
   const id = parseInt(request.params.id)
-  const { firstname, lastname, email, password_, username} = request.body
+  const { firstname, lastname, email, password_, username } = request.body
 
   pool.query(`UPDATE users
     SET firstname = $1, lastname = $2, email = $3, password_ = $4, username = $5 WHERE id = $6`,

@@ -1,5 +1,8 @@
+// Load environment variables FIRST — before any module that needs them
+require('dotenv').config();
+
 const express = require('express');
-const router = express.Router(); 
+const router = express.Router();
 const favicon = require('serve-favicon');
 const mustacheExpress = require('mustache-express');
 const app = express();
@@ -7,8 +10,6 @@ const mustache = mustacheExpress();
 const home = require('./routes/home');
 const db = require('./db/queries');
 const bodyParser = require('body-parser');
-
-require('dotenv').config();
 
 mustache.cache = null;
 app.engine('mustache', mustache);
@@ -18,7 +19,7 @@ app.use(express.static('public'));
 
 // app.use(favicon(__dirname + '/public/img/favicon.png'));
 
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }))
@@ -34,7 +35,7 @@ app.put('/users/:id', db.updateUser)
 
 app.get('/products', db.getProducts)
 
-
-app.listen(process.env.PORT, () => {
-  console.log(`Listening on port ${process.env.PORT || 3000}.`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}.`);
 });
