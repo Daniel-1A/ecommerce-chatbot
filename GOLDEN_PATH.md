@@ -1,185 +1,196 @@
-# GOLDEN_PATH.md — ecommerce-chatbot - setup.sh
+# GOLDEN_PATH.md — Ecommerce Chatbot
 
-Ruta de configuración verificada de extremo a extremo para un nuevo contribuidor en una máquina limpia.
-
----
-
-## Prerequisitos
-
-| Herramienta | Versión mínima | Cómo instalar |
-|-------------|---------------|---------------|
-| Node.js | 18 LTS | [nodejs.org](https://nodejs.org) o `nvm install 18` |
-| npm | incluido con Node | — |
-| PostgreSQL | 13+ | [postgresql.org/download](https://www.postgresql.org/download/) |
-| Git | cualquiera | [git-scm.com](https://git-scm.com) |
-
-> No se requiere Python, Visual Studio Build Tools ni compiladores nativos.
+End-to-end verified setup path for a new contributor on a clean machine.
 
 ---
 
-## Paso 1 — Clonar el repositorio
+## Prerequisites
+
+| Tool | Minimum version | How to install |
+|------|----------------|----------------|
+| Node.js | 18 LTS | [nodejs.org](https://nodejs.org) or `nvm install 18` |
+| npm | bundled with Node | — |
+| Git | any | [git-scm.com](https://git-scm.com) |
+
+**Choose one of two setup paths:**
+
+| Path | Extra requirements | Command |
+|------|-------------------|---------|
+| **A — Docker** (recommended) | Docker + Docker Compose | `docker compose up --build` |
+| **B — Local** | PostgreSQL 13+ | `bash setup.sh` |
+
+> No Python, no Visual Studio Build Tools, no native compilers required.
+
+---
+
+## Path A — Docker (recommended)
+
+One command brings up the full stack (app + PostgreSQL + schema migration):
 
 ```bash
 git clone <repo-url>
 cd ecommerce-chatbot
+cp .env.example .env
+docker compose up --build -d
 ```
+
+Open http://localhost:3000 — the chatbot UI should load.
+
+**Useful commands:**
+
+```bash
+docker compose logs -f app     # stream app logs
+docker compose ps              # check service status
+docker compose down -v         # stop & remove everything
+make up                        # alias for docker compose up --build -d
+```
+
+> The `docker-compose.yml` creates a PostgreSQL container with the correct user, password, and database. The `db/docker-init.sql` schema is auto-imported on first start.
 
 ---
 
-## Paso 2 — Verificar la versión de Node
+## Path B — Local (setup.sh)
+
+### Step 1 — Clone and verify Node
 
 ```bash
-node --version   # debe ser v18 o superior
+git clone <repo-url>
+cd ecommerce-chatbot
+node --version   # must be v18+
 ```
 
-Si no lo es, cambia de versión con nvm:
+If needed: `nvm install 18 && nvm use 18` (the `.nvmrc` file pins v18).
 
-```bash
-nvm install 18
-nvm use 18
-```
-
-El archivo `.nvmrc` en la raíz del repositorio fija la versión correcta — `nvm use` sin argumentos lo lee automáticamente.
-
----
-
-## Paso 3 — Inicializar el entorno
-
-Ejecuta el script de configuración. Verifica los runtimes, crea `.env` e instala las dependencias:
+### Step 2 — Run the setup script
 
 ```bash
 bash setup.sh
 ```
 
-Salida esperada (máquina limpia):
+This checks runtimes, creates `.env` from `.env.example`, and installs dependencies.
 
-```
-━━━ Runtime: Node.js ━━━
-[OK]    Node v18.x.x — meets minimum v18
+### Step 3 — Configure `.env`
 
-━━━ Runtime: npm ━━━
-[OK]    npm 10.x.x
-
-━━━ Runtime: PostgreSQL ━━━
-[OK]    psql (PostgreSQL) 16.x.x
-
-━━━ Environment: .env ━━━
-[OK]    .env created from .env.example
-
-━━━ Dependencies: npm install ━━━
-[OK]    npm install completed successfully
-
-━━━ Database Setup ━━━
-...instrucciones impresas...
-
-━━━ Setup Complete ━━━
-[OK]    All checks passed.
-```
-
-Si algún paso falla, el script termina con un mensaje de error descriptivo que indica cómo resolverlo.
-
----
-
-## Paso 4 — Configurar las variables de entorno
-
-Abre `.env` (creado automáticamente desde `.env.example`) y completa tus credenciales de PostgreSQL:
+Open `.env` and fill in your PostgreSQL credentials:
 
 ```dotenv
 PORT=3000
-
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=ebot
-DB_USER=tu_usuario_pg
-DB_PASSWORD=tu_contraseña_pg
+DB_USER=your_pg_username
+DB_PASSWORD=your_pg_password
 ```
 
----
-
-## Paso 5 — Configurar la base de datos
-
-Conéctate a PostgreSQL como superusuario y ejecuta el esquema:
+### Step 4 — Set up the database
 
 ```bash
 psql -U postgres
 ```
 
-Dentro de psql:
+Inside psql:
 
 ```sql
 \i db/init.sql
 ```
 
-Esto crea la base de datos `ebot` y todas las tablas (`sellers`, `categories`, `products`, `users`, `addresses`, `credit_cards`, `transactions`, `shippings`, `orders`).
+This creates the `ebot` database and all tables.
 
-> **Problema conocido en init.sql:** la definición de la tabla `categories` tiene una coma al final del último campo. Si psql reporta un error en esa instrucción, abre `db/init.sql`, elimina la coma y vuelve a ejecutar el script.
-
----
-
-## Paso 6 — Iniciar la aplicación
+### Step 5 — Start the app
 
 ```bash
 npm start
 ```
 
-Esto compila el SCSS a `public/css/main.css` una vez y luego inicia el servidor con nodemon en el puerto definido en `.env` (por defecto `3000`).
-
-Para observar cambios en SCSS durante el desarrollo:
-
-```bash
-npm run compile:sass
-```
-
-Abre `http://localhost:3000` en tu navegador.
+Open http://localhost:3000.
 
 ---
 
-## Paso 7 — Verificar las rutas
+## Verify routes
 
-| Ruta | Método | Resultado esperado |
-|------|--------|--------------------|
-| `/` | GET | Se renderiza la página de inicio |
-| `/users` | GET | Arreglo JSON de usuarios |
-| `/users/:id` | GET | Objeto JSON del usuario |
-| `/users/username/:username` | GET | Objeto JSON del usuario |
-| `/products` | GET | Arreglo JSON de productos |
-| `/users` | POST | Crea usuario, retorna 201 |
-| `/users/:id` | PUT | Actualiza usuario, retorna 200 |
-
----
-
-## Sobre db-lectures/
-
-Los archivos en `db-lectures/` son **ejercicios SQL del curso** — no son necesarios para ejecutar la aplicación.
-
-| Archivo | Propósito |
-|---------|-----------|
-| `aula1.sql` | Lección 1 — SELECT / INSERT básico |
-| `aula2.sql` | Lección 2 — JOINs y filtros |
-| `07.sql` | Ejercicios de la sección 7 |
-| `08.sql` | Ejercicios de la sección 8 |
-| `secao03.sql` | Ejercicios de la sección 3 |
-| `alter-drop.sql` | Práctica de ALTER TABLE / DROP TABLE |
-
-Para ejecutar cualquiera de ellos manualmente:
-
-```bash
-psql -U tu_usuario_pg -d ebot -f db-lectures/<archivo>.sql
-```
+| Route | Method | Expected result |
+|-------|--------|----------------|
+| `/` | GET | Home page with chatbot UI |
+| `/users` | GET | JSON array (empty if no data) |
+| `/users/:id` | GET | JSON user object |
+| `/users/username/:username` | GET | JSON user object |
+| `/products` | GET | JSON array (empty if no data) |
+| `/users` | POST | Creates user, returns 201 |
+| `/users/:id` | PUT | Updates user, returns 200 |
 
 ---
 
-## Artefactos para resolver los bloqueos del Pain Log
+## About `db-lectures/`
 
-| Pain # | Tipo | Problema | Artefacto | Estado |
-|--------|------|----------|-----------|--------|
-| #1 | MISSING_DOC | Versión de Node no documentada, sin archivo nvm | `.nvmrc` fija Node 18; `setup.sh` §1 verifica la versión en tiempo de ejecución | **Resuelto** |
-| #2 | BROKEN_CMD | `npm install` falla — error de compilación nativa de `node-sass` | `package.json` — `node-sass` reemplazado por `sass` (JS puro, sin bindings en C) | **Resuelto** |
-| #3 | IMPLICIT_DEP | `node-gyp` no encuentra Python | Eliminado al remover `node-sass`; `sass` no tiene dependencias nativas | **Resuelto** |
-| #4 | IMPLICIT_DEP | Se requieren Windows Build Tools, no documentado | Eliminado al remover `node-sass`; no se necesita toolchain de compilación | **Resuelto** |
-| #5 | VERSION_HELL | Node v25 incompatible con dependencias de Node ^8 | `engines: ">=18"` en `package.json` + `.nvmrc` + verificación de versión en `setup.sh` | **Resuelto** |
-| #6 | BROKEN_CMD | `npm start` falla porque la instalación nunca se completó | Derivado del #2 — una vez que `npm install` pasa, `npm start` funciona | **Resuelto** |
-| #7 | ENV_GAP | Sin `.env.example`, configuración opaca | `.env.example` con todas las variables documentadas; `setup.sh` lo copia automáticamente | **Resuelto** |
-| #8 | MISSING_DOC | Configuración de BD no documentada (qué BD, cómo ejecutar init.sql) | `setup.sh` §6 imprime instrucciones paso a paso; documentado aquí en §5 | **Resuelto** |
-| #9 | MISSING_DOC | Propósito y orden de scripts en `db-lectures/` desconocidos | `db-lectures/README.md` lista el propósito de cada archivo y el comando para ejecutarlo | **Resuelto** |
-| #10 | MISSING_DOC | `.env` solo tenía `PORT`, sin variables de BD | `.env.example` documenta las 6 variables requeridas con comentarios | **Resuelto** |
+Course SQL exercises — **not required** to run the application.
+
+| File | Purpose |
+|------|---------|
+| `aula1.sql` | Lesson 1 — basic SELECT / INSERT |
+| `aula2.sql` | Lesson 2 — JOINs and filtering |
+| `07.sql` | Section 7 exercises |
+| `08.sql` | Section 8 exercises |
+| `secao03.sql` | Section 3 exercises |
+| `alter-drop.sql` | ALTER TABLE / DROP TABLE practice |
+
+---
+
+## Pain Point → Artifact Mapping
+
+| Pain # | Tag | Pain Point | Artifact that fixes it | Status |
+|--------|-----|------------|----------------------|--------|
+| 1 | VERSION_HELL | Node ^8 with no upper bound, modern Node fails | `.nvmrc` pins Node 18; `package.json` `engines: ">=18"`; `setup.sh` checks version | **Fixed** |
+| 2 | IMPLICIT_DEP | `node-sass` requires Python 2 + C++ build tools | `package.json` — replaced `node-sass` with `sass` (pure JS, zero native deps) | **Fixed** |
+| 3 | BROKEN_CMD | `npm i` fails on Node > 12 | Follows from #2 — `sass` installs cleanly on any modern Node | **Fixed** |
+| 4 | BROKEN_CMD | `npm start` fails (node-sass not found) | Follows from #2 — scripts updated to use `sass` CLI | **Fixed** |
+| 5 | BROKEN_CMD | `compile:sass` README has inline comment | `package.json` scripts use clean `sass` syntax | **Fixed** |
+| 6 | IMPLICIT_DEP | PostgreSQL not in prerequisites | `docker-compose.yml` bundles PostgreSQL; `setup.sh` checks for `psql` | **Fixed** |
+| 7 | ENV_GAP | DB credentials hardcoded in `queries.js` | `db/queries.js` reads `process.env.*`; `.env.example` documents all vars | **Fixed** |
+| 8 | MISSING_DOC | No DB setup instructions | `docker-compose.yml` auto-migrates; `setup.sh` prints step-by-step guide | **Fixed** |
+| 9 | BROKEN_CMD | `init.sql` trailing comma syntax error | Fixed in `db/init.sql`; clean copy in `db/docker-init.sql` | **Fixed** |
+| 10 | MISSING_DOC | Circular FK in schema unexplained | — | Out of Scope |
+| 11 | MISSING_DOC | `db-lectures/` purpose unknown | Documented above in this file | **Fixed** |
+| 12 | MISSING_DOC | UI in Portuguese, undocumented | — | Out of Scope |
+| 13 | SILENT_FAIL | `package-lock.json` gitignored | `.gitignore` updated: `package-lock.json` no longer ignored | **Fixed** |
+| 14 | MISSING_DOC | Sass/CSS relationship unclear | — | Out of Scope |
+| 15 | ENV_GAP | `app.listen(undefined)` if PORT unset | `app.js` fixed: `const PORT = process.env.PORT \|\| 3000` | **Fixed** |
+
+**Summary:** 12 Fixed · 3 Out of Scope · 0 Partial
+
+---
+
+## What the AI Got Wrong
+
+> The deliverable requires documenting at least 2 things the AI hallucinated or that had to be manually corrected.
+
+### 1. Dart Sass `@import` deprecation broke the Docker build
+
+The AI replaced `node-sass` with `sass` (Dart Sass) in `package.json` and updated the Dockerfile to compile SCSS. However, it did **not** anticipate that Dart Sass treats `@import` as deprecated and emits deprecation warnings that, when combined with other issues, make the output look like a wall of errors. The `--silence-deprecation=import` flag had to be added manually to the Dockerfile's `RUN npx sass ...` command after the first failed build.
+
+### 2. The AI missed a CSS syntax error exposed by the stricter Dart Sass parser
+
+The original `sass/pages/_home.scss` file contained `@media screen and(max-width: 29em)` — missing a space between `and` and `(`. The old `node-sass` (LibSass) silently accepted this, but Dart Sass treats it as a hard error (`Error: Expected whitespace`). The AI did not flag this during planning or code review — it was only discovered when `docker compose up --build` failed at the sass compilation step. The fix was a one-character change (`and(` → `and (`), but it required a full rebuild cycle to diagnose.
+
+### 3. The AI included `version: "3.8"` in `docker-compose.yml`
+
+Modern Docker Compose (v2) no longer uses the `version` field — it's ignored and emits a warning: *"the attribute 'version' is obsolete"*. The AI generated the file with `version: "3.8"` based on outdated training data. This had to be removed manually after the first build showed the warning.
+
+---
+
+## Artifacts Committed
+
+| File | Type | Description |
+|------|------|-------------|
+| `Dockerfile` | NEW | Multi-stage build: Node 18 + sass compilation |
+| `docker-compose.yml` | NEW | Full stack: app + PostgreSQL 15 with healthcheck |
+| `db/docker-init.sql` | NEW | Fixed SQL schema for Docker auto-migration |
+| `.env.example` | NEW | All environment variables documented with comments |
+| `.nvmrc` | NEW | Pins Node 18 for `nvm use` |
+| `setup.sh` | NEW | Bootstrap script with runtime checks and colored output |
+| `Makefile` | NEW | Common targets: `make setup`, `make up`, `make down` |
+| `package.json` | MODIFIED | `node-sass` → `sass`, added `engines` field |
+| `app.js` | MODIFIED | `dotenv` moved to line 1, PORT fallback fixed |
+| `db/queries.js` | MODIFIED | Hardcoded DB creds → `process.env.*` |
+| `db/init.sql` | MODIFIED | Fixed trailing comma + missing semicolon |
+| `.gitignore` | MODIFIED | Removed `package-lock.json`, added `.env` |
+| `sass/pages/_home.scss` | MODIFIED | Fixed `@media screen and(` syntax |
