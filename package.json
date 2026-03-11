@@ -1,19 +1,19 @@
 {
-  "name": "boilerplate",
+  "name": "ecommerce-chatbot",
   "version": "1.0.0",
-  "description": "Express, sass and mustache boilerplate",
+  "description": "Ecommerce chatbot boilerplate with Express, Sass and Mustache",
   "main": "app.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=16"
   },
   "scripts": {
-    "compile:sass": "sass --watch sass/main.scss public/css/main.css",
+    "compile:sass": "sass sass/main.scss public/css/main.css --watch",
     "start": "sass sass/main.scss public/css/main.css && nodemon app.js"
   },
   "author": "Jhonatan Tomimatsu",
   "license": "ISC",
   "devDependencies": {
-    "sass": "^1.77.0"
+    "sass": "^1.69.0"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
