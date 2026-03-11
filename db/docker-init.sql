@@ -1,18 +1,15 @@
--- -----------------------------
--- Creates database
--- -----------------------------
-CREATE DATABASE ebot;
-
--- -----------------------------
--- Creates tables
--- -----------------------------
--- CREATE TABLE accounts(
--- 	id SERIAL PRIMARY KEY,
--- 	type INT NOT NULL
--- );
+-- =========================================================
+-- docker-init.sql
+-- Fixed version of init.sql for Docker auto-migration.
+-- Mounted into /docker-entrypoint-initdb.d/ by docker-compose.
+-- Changes vs original init.sql:
+--   1. Removed CREATE DATABASE (Docker POSTGRES_DB handles it)
+--   2. Fixed trailing comma in categories table (line 30)
+--   3. Added missing semicolon on final ALTER TABLE
+-- =========================================================
 
 -- ----------------------------------------------------
--- Table 'ebot'.'sellers'
+-- Table 'sellers'
 -- ----------------------------------------------------
 CREATE TABLE sellers(
 	id SERIAL PRIMARY KEY,
@@ -23,7 +20,7 @@ CREATE TABLE sellers(
 );
 
 -- ----------------------------------------------------
--- Table 'categories'.'sellers'
+-- Table 'categories'
 -- ----------------------------------------------------
 CREATE TABLE categories(
 	id SERIAL PRIMARY KEY,
@@ -31,7 +28,7 @@ CREATE TABLE categories(
 );
 
 -- ----------------------------------------------------
--- Table 'products'.'sellers'
+-- Table 'products'
 -- ----------------------------------------------------
 CREATE TABLE products(
 	id SERIAL PRIMARY KEY,
@@ -49,11 +46,10 @@ CREATE TABLE products(
 );
 
 -- ----------------------------------------------------
--- Table 'users'.'sellers'
+-- Table 'users'
 -- ----------------------------------------------------
 CREATE TABLE users(
 	id SERIAL PRIMARY KEY,
-	-- account_id INT references accounts(id) NOT NULL,
 	firstname VARCHAR(50) NOT NULL,
 	lastname VARCHAR(50) NOT NULL,
 	email TEXT NOT NULL,
@@ -62,9 +58,6 @@ CREATE TABLE users(
 );
 
 ALTER TABLE categories ADD product_id INT REFERENCES products(id);
-
--- ALTER TABLE sellers ADD account_id INT REFERENCES accounts(id);
-
 
 CREATE TABLE addresses(
 	id SERIAL PRIMARY KEY,
@@ -93,7 +86,7 @@ CREATE TABLE shippings(
 	shipping_method VARCHAR(250) NOT NULL,
 	shipping_charge MONEY NOT NULL,
 	shipping_estimated_delivery_day DATE
-	);
+);
 
 CREATE TABLE orders(
 	id SERIAL PRIMARY KEY,

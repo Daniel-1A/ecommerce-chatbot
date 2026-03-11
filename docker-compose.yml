@@ -1,0 +1,40 @@
+
+services:
+  # ── PostgreSQL ─────────────────────────────
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ebot_user
+      POSTGRES_PASSWORD: ebot_pass
+      POSTGRES_DB: ebot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/docker-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ebot_user -d ebot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Node.js App ────────────────────────────
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_USER: ebot_user
+      DB_PASSWORD: ebot_pass
+      DB_HOST: db
+      DB_NAME: ebot
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
