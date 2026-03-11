@@ -1,23 +1,23 @@
-# GOLDEN_PATH.md — ecommerce-chatbot - stup.sh
+# GOLDEN_PATH.md — ecommerce-chatbot - setup.sh
 
-End-to-end verified setup path for a new contributor on a clean machine.
+Ruta de configuración verificada de extremo a extremo para un nuevo contribuidor en una máquina limpia.
 
 ---
 
-## Prerequisites
+## Prerequisitos
 
-| Tool | Minimum version | How to install |
-|------|----------------|----------------|
-| Node.js | 18 LTS | [nodejs.org](https://nodejs.org) or `nvm install 18` |
-| npm | bundled with Node | — |
+| Herramienta | Versión mínima | Cómo instalar |
+|-------------|---------------|---------------|
+| Node.js | 18 LTS | [nodejs.org](https://nodejs.org) o `nvm install 18` |
+| npm | incluido con Node | — |
 | PostgreSQL | 13+ | [postgresql.org/download](https://www.postgresql.org/download/) |
-| Git | any | [git-scm.com](https://git-scm.com) |
+| Git | cualquiera | [git-scm.com](https://git-scm.com) |
 
-> No Python, no Visual Studio Build Tools, no native compilers required.
+> No se requiere Python, Visual Studio Build Tools ni compiladores nativos.
 
 ---
 
-## Step 1 — Clone the repo
+## Paso 1 — Clonar el repositorio
 
 ```bash
 git clone <repo-url>
@@ -26,32 +26,32 @@ cd ecommerce-chatbot
 
 ---
 
-## Step 2 — Verify Node version
+## Paso 2 — Verificar la versión de Node
 
 ```bash
-node --version   # must be v18 or higher
+node --version   # debe ser v18 o superior
 ```
 
-If it is not, switch with nvm:
+Si no lo es, cambia de versión con nvm:
 
 ```bash
 nvm install 18
 nvm use 18
 ```
 
-The `.nvmrc` file at the repo root pins the correct version — `nvm use` with no argument will read it automatically.
+El archivo `.nvmrc` en la raíz del repositorio fija la versión correcta — `nvm use` sin argumentos lo lee automáticamente.
 
 ---
 
-## Step 3 — Bootstrap the environment
+## Paso 3 — Inicializar el entorno
 
-Run the setup script. It checks runtimes, creates `.env`, and installs dependencies:
+Ejecuta el script de configuración. Verifica los runtimes, crea `.env` e instala las dependencias:
 
 ```bash
 bash setup.sh
 ```
 
-Expected output (clean machine):
+Salida esperada (máquina limpia):
 
 ```
 ━━━ Runtime: Node.js ━━━
@@ -70,19 +70,19 @@ Expected output (clean machine):
 [OK]    npm install completed successfully
 
 ━━━ Database Setup ━━━
-...instructions printed...
+...instrucciones impresas...
 
 ━━━ Setup Complete ━━━
 [OK]    All checks passed.
 ```
 
-If any step fails, the script exits with a descriptive error message pointing at the fix.
+Si algún paso falla, el script termina con un mensaje de error descriptivo que indica cómo resolverlo.
 
 ---
 
-## Step 4 — Configure environment variables
+## Paso 4 — Configurar las variables de entorno
 
-Open `.env` (auto-created from `.env.example`) and fill in your PostgreSQL credentials:
+Abre `.env` (creado automáticamente desde `.env.example`) y completa tus credenciales de PostgreSQL:
 
 ```dotenv
 PORT=3000
@@ -90,96 +90,96 @@ PORT=3000
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=ebot
-DB_USER=your_pg_username
-DB_PASSWORD=your_pg_password
+DB_USER=tu_usuario_pg
+DB_PASSWORD=tu_contraseña_pg
 ```
 
 ---
 
-## Step 5 — Set up the database
+## Paso 5 — Configurar la base de datos
 
-Connect to PostgreSQL as a superuser and run the schema:
+Conéctate a PostgreSQL como superusuario y ejecuta el esquema:
 
 ```bash
 psql -U postgres
 ```
 
-Inside psql:
+Dentro de psql:
 
 ```sql
 \i db/init.sql
 ```
 
-This creates the `ebot` database and all tables (`sellers`, `categories`, `products`, `users`, `addresses`, `credit_cards`, `transactions`, `shippings`, `orders`).
+Esto crea la base de datos `ebot` y todas las tablas (`sellers`, `categories`, `products`, `users`, `addresses`, `credit_cards`, `transactions`, `shippings`, `orders`).
 
-> **Known issue in init.sql:** the `categories` table definition has a trailing comma after its last column. If psql errors on that statement, open `db/init.sql`, remove the trailing comma, and re-run.
+> **Problema conocido en init.sql:** la definición de la tabla `categories` tiene una coma al final del último campo. Si psql reporta un error en esa instrucción, abre `db/init.sql`, elimina la coma y vuelve a ejecutar el script.
 
 ---
 
-## Step 6 — Start the app
+## Paso 6 — Iniciar la aplicación
 
 ```bash
 npm start
 ```
 
-This compiles SCSS to `public/css/main.css` once, then starts the server with nodemon on the port defined in `.env` (default `3000`).
+Esto compila el SCSS a `public/css/main.css` una vez y luego inicia el servidor con nodemon en el puerto definido en `.env` (por defecto `3000`).
 
-To watch SCSS changes during development:
+Para observar cambios en SCSS durante el desarrollo:
 
 ```bash
 npm run compile:sass
 ```
 
-Open `http://localhost:3000` in your browser.
+Abre `http://localhost:3000` en tu navegador.
 
 ---
 
-## Step 7 — Verify routes
+## Paso 7 — Verificar las rutas
 
-| Route | Method | Expected result |
-|-------|--------|----------------|
-| `/` | GET | Home page renders |
-| `/users` | GET | JSON array of users |
-| `/users/:id` | GET | JSON user object |
-| `/users/username/:username` | GET | JSON user object |
-| `/products` | GET | JSON array of products |
-| `/users` | POST | Creates user, returns 201 |
-| `/users/:id` | PUT | Updates user, returns 200 |
+| Ruta | Método | Resultado esperado |
+|------|--------|--------------------|
+| `/` | GET | Se renderiza la página de inicio |
+| `/users` | GET | Arreglo JSON de usuarios |
+| `/users/:id` | GET | Objeto JSON del usuario |
+| `/users/username/:username` | GET | Objeto JSON del usuario |
+| `/products` | GET | Arreglo JSON de productos |
+| `/users` | POST | Crea usuario, retorna 201 |
+| `/users/:id` | PUT | Actualiza usuario, retorna 200 |
 
 ---
 
-## About db-lectures/
+## Sobre db-lectures/
 
-The files in `db-lectures/` are **course SQL exercises** — they are not required to run the application.
+Los archivos en `db-lectures/` son **ejercicios SQL del curso** — no son necesarios para ejecutar la aplicación.
 
-| File | Purpose |
-|------|---------|
-| `aula1.sql` | Lesson 1 — basic SELECT / INSERT |
-| `aula2.sql` | Lesson 2 — JOINs and filtering |
-| `07.sql` | Section 7 exercises |
-| `08.sql` | Section 8 exercises |
-| `secao03.sql` | Section 3 exercises |
-| `alter-drop.sql` | ALTER TABLE / DROP TABLE practice |
+| Archivo | Propósito |
+|---------|-----------|
+| `aula1.sql` | Lección 1 — SELECT / INSERT básico |
+| `aula2.sql` | Lección 2 — JOINs y filtros |
+| `07.sql` | Ejercicios de la sección 7 |
+| `08.sql` | Ejercicios de la sección 8 |
+| `secao03.sql` | Ejercicios de la sección 3 |
+| `alter-drop.sql` | Práctica de ALTER TABLE / DROP TABLE |
 
-Run any of them manually if needed:
+Para ejecutar cualquiera de ellos manualmente:
 
 ```bash
-psql -U your_pg_username -d ebot -f db-lectures/<filename>.sql
+psql -U tu_usuario_pg -d ebot -f db-lectures/<archivo>.sql
 ```
 
 ---
 
-## Artifacts committed to fix Pain Log blockers
+## Artefactos para resolver los bloqueos del Pain Log
 
-| Pain # | Type | Pain Point | Artifact | Status |
-|--------|------|------------|----------|--------|
-| #1 | MISSING_DOC | No Node version documented, no nvm file | `.nvmrc` pins Node 18; `setup.sh` §1 checks version at runtime | **Fixed** |
-| #2 | BROKEN_CMD | `npm install` fails — `node-sass` native compile error | `package.json` — `node-sass` replaced with `sass` (pure JS, no C bindings) | **Fixed** |
-| #3 | IMPLICIT_DEP | `node-gyp` can't find Python | Eliminated by removing `node-sass`; `sass` has no native dependencies | **Fixed** |
-| #4 | IMPLICIT_DEP | Windows Build Tools required, undocumented | Eliminated by removing `node-sass`; no build toolchain needed | **Fixed** |
-| #5 | VERSION_HELL | Node v25 incompatible with Node ^8 deps | `engines: ">=18"` in `package.json` + `.nvmrc` + `setup.sh` version gate | **Fixed** |
-| #6 | BROKEN_CMD | `npm start` fails because install never succeeded | Follows from #2 — once `npm install` passes, `npm start` works | **Fixed** |
-| #7 | ENV_GAP | No `.env.example`, required config opaque | `.env.example` with all variables documented; `setup.sh` auto-copies it | **Fixed** |
-| #8 | MISSING_DOC | DB setup undocumented (which DB, how to run init.sql) | `setup.sh` §6 prints step-by-step instructions; documented here in §5 | **Fixed** |
-| #9 | MISSING_DOC | `db-lectures/` purpose and order unknown | `db-lectures/README.md` lists each file's purpose and run command | **Fixed** |
-| #10 | MISSING_DOC | `.env` only had `PORT`, DB vars missing | `.env.example` documents all 6 required variables with inline comments | **Fixed** |
+| Pain # | Tipo | Problema | Artefacto | Estado |
+|--------|------|----------|-----------|--------|
+| #1 | MISSING_DOC | Versión de Node no documentada, sin archivo nvm | `.nvmrc` fija Node 18; `setup.sh` §1 verifica la versión en tiempo de ejecución | **Resuelto** |
+| #2 | BROKEN_CMD | `npm install` falla — error de compilación nativa de `node-sass` | `package.json` — `node-sass` reemplazado por `sass` (JS puro, sin bindings en C) | **Resuelto** |
+| #3 | IMPLICIT_DEP | `node-gyp` no encuentra Python | Eliminado al remover `node-sass`; `sass` no tiene dependencias nativas | **Resuelto** |
+| #4 | IMPLICIT_DEP | Se requieren Windows Build Tools, no documentado | Eliminado al remover `node-sass`; no se necesita toolchain de compilación | **Resuelto** |
+| #5 | VERSION_HELL | Node v25 incompatible con dependencias de Node ^8 | `engines: ">=18"` en `package.json` + `.nvmrc` + verificación de versión en `setup.sh` | **Resuelto** |
+| #6 | BROKEN_CMD | `npm start` falla porque la instalación nunca se completó | Derivado del #2 — una vez que `npm install` pasa, `npm start` funciona | **Resuelto** |
+| #7 | ENV_GAP | Sin `.env.example`, configuración opaca | `.env.example` con todas las variables documentadas; `setup.sh` lo copia automáticamente | **Resuelto** |
+| #8 | MISSING_DOC | Configuración de BD no documentada (qué BD, cómo ejecutar init.sql) | `setup.sh` §6 imprime instrucciones paso a paso; documentado aquí en §5 | **Resuelto** |
+| #9 | MISSING_DOC | Propósito y orden de scripts en `db-lectures/` desconocidos | `db-lectures/README.md` lista el propósito de cada archivo y el comando para ejecutarlo | **Resuelto** |
+| #10 | MISSING_DOC | `.env` solo tenía `PORT`, sin variables de BD | `.env.example` documenta las 6 variables requeridas con comentarios | **Resuelto** |
